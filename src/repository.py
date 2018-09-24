@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from decimal import Decimal
-from sqlite3 import Connection, register_adapter, register_converter
+from sqlite3 import Connection, register_adapter, register_converter, IntegrityError
 from typing import Union
 
 from entities import User
 
 register_adapter(Decimal, lambda d: str(d))
 register_converter("decimal", lambda s: Decimal(s))
+
+
+class MoneyAmountError(RuntimeError):
+    pass
 
 
 def create_db(connection: Connection):
@@ -20,6 +24,10 @@ def create_db(connection: Connection):
             current DECIMAL(10,2) CHECK(current >= min AND current <= max)
         );
     """)
+
+
+def drop_db(connection: Connection):
+    connection.execute("DROP TABLE USERS")
 
 
 def insert(connection: Connection, user: User):
@@ -53,5 +61,8 @@ def delete_by_name(connection: Connection, name: str):
 
 
 def transfer_by_name(connection: Connection, from_name: str, to_name: str, amount: Union[Decimal, int]):
-    connection.execute("UPDATE USERS SET current=current-? WHERE name=?", [amount, from_name])
-    connection.execute("UPDATE USERS SET current=current+? WHERE name=?", [amount, to_name])
+    try:
+        connection.execute("UPDATE USERS SET current=current-? WHERE name=?", [amount, from_name])
+        connection.execute("UPDATE USERS SET current=current+? WHERE name=?", [amount, to_name])
+    except IntegrityError as e:
+        raise MoneyAmountError()
