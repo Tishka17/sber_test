@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from sqlite3 import connect as sqlite3_connect, Connection
 from psycopg2 import connect as postgresql_connect
+from psycopg2.extensions import connection
 
 
-def connect() -> Connection:
+def connect() -> connection:
     return postgresql_connect(dbname="tishka17")

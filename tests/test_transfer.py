@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
 from time import sleep
 
-from repository import create_db, insert, transfer_by_name, get, MoneyAmountError, drop_db
+from model.repository import create_db, insert, transfer_by_name, get, MoneyAmountError, drop_db
 
-from entities import User
+from model.entities import User
 
 from unittest import TestCase
 from psycopg2 import connect
-from threading import Thread, Lock, Condition
+from threading import Thread, Condition
 
 
 class TestInsert(TestCase):

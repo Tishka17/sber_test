@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from decimal import Decimal
 from connect import connect
 
-from repository import transfer_by_name, get
+from model.repository import transfer_by_name, get
 
 parser = ArgumentParser()
 parser.add_argument("-f", "--from", dest="from_", type=str)

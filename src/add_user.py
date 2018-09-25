@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
 from connect import connect
-from repository import insert
-from entities import User
+from model.repository import insert
+from model.entities import User
 
 parser = ArgumentParser("Создание пользователя")
 parser.add_argument("-n", "--name", required=True)

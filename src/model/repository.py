@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from typing import Union
 
-from entities import User
+from model.entities import User
 from psycopg2 import IntegrityError
 
 
