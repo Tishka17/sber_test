@@ -6,7 +6,8 @@ from unittest import TestCase
 
 from connect import connect_test
 from model.entities import User
-from model.repository import create_db, insert, transfer_by_name, get, MoneyAmountError, drop_db
+from model.use_cases import create_db, add_user, get_user, MoneyAmountError, drop_db
+from model.repository import transfer_by_name
 
 
 class TestTransfer(TestCase):
@@ -23,14 +24,14 @@ class TestTransfer(TestCase):
             max_=100,
             current=50
         )
-        insert(self.connection, user)
+        add_user(self.connection, user)
         user = User(
             name=self.name2,
             min_=0,
             max_=20,
             current=10
         )
-        insert(self.connection, user)
+        add_user(self.connection, user)
         self.connection.commit()
 
     def tearDown(self):
@@ -41,8 +42,8 @@ class TestTransfer(TestCase):
     def test_transfer_ok(self):
         transfer_by_name(self.connection, self.name1, self.name2, 5)
 
-        user1_after = get(self.connection, self.name1)
-        user2_after = get(self.connection, self.name2)
+        user1_after = get_user(self.connection, self.name1)
+        user2_after = get_user(self.connection, self.name2)
         self.assertEqual(user1_after.current, 45)
         self.assertEqual(user2_after.current, 15)
 
@@ -50,7 +51,7 @@ class TestTransfer(TestCase):
         self.assertRaises(MoneyAmountError, transfer_by_name, self.connection, self.name2, self.name1, 15)
         self.connection.rollback()
 
-    def test_tranfer_too_much(self):
+    def test_transfer_too_much(self):
         self.assertRaises(MoneyAmountError, transfer_by_name, self.connection, self.name1, self.name2, 20)
         self.connection.rollback()
 
@@ -69,20 +70,18 @@ class TestConcurrentTransfer(TestCase):
             max_=100,
             current=50
         )
-        insert(self.connection, user)
+        add_user(self.connection, user)
         user = User(
             name=self.name2,
             min_=0,
             max_=20,
             current=10
         )
-        insert(self.connection, user)
-        self.connection.commit()
+        add_user(self.connection, user)
         self.connection2 = connect_test()
 
     def tearDown(self):
         drop_db(self.connection)
-        self.connection.commit()
         self.connection.close()
         self.connection2.close()
 

@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
 from decimal import Decimal
-from connect import connect_production
 
-from model.repository import get, MoneyAmountError
-from model.use_cases import transfer_by_name
+from connect import connect_production
+from model import MoneyAmountError
+from model.use_cases import transfer_by_name, get_user
 
 parser = ArgumentParser(description="Перевод денег между двемя пользователями")
 parser.add_argument("-f", "--from", dest="from_", type=str)
@@ -16,8 +16,8 @@ args = parser.parse_args()
 
 with connect_production() as conn:
     print("--- BEFORE TRANSFER ---")
-    print(get(conn, args.from_))
-    print(get(conn, args.to_))
+    print(get_user(conn, args.from_))
+    print(get_user(conn, args.to_))
     print()
 
     try:
@@ -28,6 +28,6 @@ with connect_production() as conn:
 
     print()
     print("--- AFTER TRANSFER ---")
-    print(get(conn, args.from_))
-    print(get(conn, args.to_))
+    print(get_user(conn, args.from_))
+    print(get_user(conn, args.to_))
     conn.commit()

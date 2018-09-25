@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
+
 from connect import connect_production
-from model.repository import insert
-from model.entities import User
+from model import User
+from model.use_cases import add_user
 
 parser = ArgumentParser(description="Создание пользователя")
 parser.add_argument("-n", "--name", required=True)
@@ -20,5 +21,4 @@ with connect_production() as conn:
         max_=args.max_,
         current=args.current
     )
-    insert(conn, user)
-    conn.commit()
+    add_user(conn, user)

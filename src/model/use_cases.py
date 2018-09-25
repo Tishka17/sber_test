@@ -6,11 +6,36 @@ from typing import Union
 from psycopg2 import Error
 from psycopg2.extensions import connection
 
+from .entities import User
 from .repository import (
     transfer_by_name_tpc as transfer_by_name_tpc_impl,
     transfer_by_name as transfer_by_name_impl,
+    insert as insert_impl,
+    get as get_impl,
+    create_db as create_db_impl,
+    drop_db as drop_db_impl,
     MoneyAmountError
 )
+
+
+def create_db(conn: connection):
+    create_db_impl(conn)
+    conn.commit()
+
+
+def drop_db(conn: connection):
+    drop_db_impl(conn)
+    conn.commit()
+
+
+def get_user(conn: connection, name: str):
+    return get_impl(conn, name)
+
+
+def add_user(conn: connection, user: User):
+    insert_impl(conn, user)
+    conn.commit()
+    return user
 
 
 def transfer_by_name(conn: connection, from_name: str, to_name: str, amount: Union[Decimal, int]):

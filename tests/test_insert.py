@@ -5,7 +5,7 @@ from unittest import TestCase
 from connect import connect_test
 
 from model.entities import User
-from model.repository import drop_db, create_db, insert, get
+from model.use_cases import drop_db, create_db, add_user, get_user
 
 
 class TestInsert(TestCase):
@@ -27,7 +27,7 @@ class TestInsert(TestCase):
             max_=100,
             current=10
         )
-        insert(self.connection, user)
+        add_user(self.connection, user)
         self.assertIsNotNone(user.id_)
-        user2 = get(self.connection, user.name)
+        user2 = get_user(self.connection, user.name)
         self.assertEqual(user, user2)
