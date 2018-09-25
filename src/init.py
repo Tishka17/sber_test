@@ -4,6 +4,6 @@ from connect import connect_production
 
 from model.repository import create_db
 
-conn = connect_production()
-create_db(conn)
-conn.commit()
+with connect_production() as conn:
+    create_db(conn)
+    conn.commit()

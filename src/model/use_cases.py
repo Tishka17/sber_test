@@ -14,8 +14,12 @@ from .repository import (
 
 
 def transfer_by_name(conn: connection, from_name: str, to_name: str, amount: Union[Decimal, int]):
-    transfer_by_name_impl(conn, from_name, to_name, amount)
-    conn.commit()
+    try:
+        transfer_by_name_impl(conn, from_name, to_name, amount)
+        conn.commit()
+    except MoneyAmountError:
+        conn.rollback()
+        raise
 
 
 def transfer_by_name_tpc(from_connection: connection, from_name: str, to_connection: connection, to_name: str,
