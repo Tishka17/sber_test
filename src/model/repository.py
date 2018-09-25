@@ -82,3 +82,16 @@ def transfer_by_name(conn: connection, from_name: str, to_name: str, amount: Uni
     except IntegrityError as e:
         raise MoneyAmountError()
     cursor.close()
+
+
+def transfer_by_name_tpc(from_connection: connection, from_name: str, to_connection: connection, to_name: str,
+                         amount: Union[Decimal, int]):
+    from_cursor = from_connection.cursor()
+    to_cursor = to_connection.cursor()
+    try:
+        from_cursor.execute("UPDATE USERS SET current_amount = current_amount - %s WHERE name=%s", [amount, from_name])
+        to_cursor.execute("UPDATE USERS SET current_amount = current_amount + %s WHERE name=%s", [amount, to_name])
+    except IntegrityError:
+        raise MoneyAmountError()
+    from_cursor.close()
+    to_cursor.close()
