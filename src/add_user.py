@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
-from connect import connect
+from connect import connect_production
 from model.repository import insert
 from model.entities import User
 
@@ -13,7 +13,7 @@ parser.add_argument("-c", "--current", help="Current money amount", default=0)
 
 args = parser.parse_args()
 
-conn = connect()
+conn = connect_production()
 user = User(
     name=args.name,
     min_=args.min_,

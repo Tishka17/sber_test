@@ -1,0 +1,4 @@
+database: tishka17
+user: tishka17
+host: localhost
+port: 5432

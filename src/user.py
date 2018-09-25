@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
 from decimal import Decimal
-from connect import connect
+from connect import connect_production
 
-from model.repository import transfer_by_name, get
+from model.repository import get
+from model.use_cases import transfer_by_name
 
 parser = ArgumentParser()
 parser.add_argument("-f", "--from", dest="from_", type=str)
@@ -13,7 +14,7 @@ parser.add_argument("amount", type=Decimal)
 
 args = parser.parse_args()
 
-conn = connect()
+conn = connect_production()
 print("--- BEFORE TRANSFER ---")
 print(get(conn, args.from_))
 print(get(conn, args.to_))

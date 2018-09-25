@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 
-from psycopg2 import connect
+from connect import connect_test
 
 from model.entities import User
 from model.repository import drop_db, create_db, insert, get
@@ -10,7 +10,7 @@ from model.repository import drop_db, create_db, insert, get
 
 class TestInsert(TestCase):
     def setUp(self):
-        self.connection = connect(dbname="tishka17")
+        self.connection = connect_test()
         drop_db(self.connection)
         create_db(self.connection)
         self.connection.commit()

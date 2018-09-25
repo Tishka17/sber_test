@@ -4,8 +4,7 @@ from threading import Thread, Condition
 from time import sleep
 from unittest import TestCase
 
-from psycopg2 import connect
-
+from connect import connect_test
 from model.entities import User
 from model.repository import create_db, insert, transfer_by_name, get, MoneyAmountError, drop_db
 
@@ -15,7 +14,7 @@ class TestTransfer(TestCase):
     name2 = "User2"
 
     def setUp(self):
-        self.connection = connect(dbname="tishka17")
+        self.connection = connect_test()
         drop_db(self.connection)
         create_db(self.connection)
         user = User(
@@ -61,7 +60,7 @@ class TestConcurrentTransfer(TestCase):
     name2 = "User2"
 
     def setUp(self):
-        self.connection = connect(dbname="tishka17")
+        self.connection = connect_test()
         drop_db(self.connection)
         create_db(self.connection)
         user = User(
@@ -79,7 +78,7 @@ class TestConcurrentTransfer(TestCase):
         )
         insert(self.connection, user)
         self.connection.commit()
-        self.connection2 = connect(dbname="tishka17")
+        self.connection2 = connect_test()
 
     def tearDown(self):
         drop_db(self.connection)
