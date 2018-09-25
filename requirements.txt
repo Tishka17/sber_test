@@ -1,1 +1,2 @@
 dataclasses
+psycopg2-binary
