@@ -6,3 +6,4 @@ from repository import create_db
 
 conn = connect()
 create_db(conn)
+conn.commit()

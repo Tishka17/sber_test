@@ -1,49 +1,58 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from decimal import Decimal
-from sqlite3 import Connection, register_adapter, register_converter, IntegrityError
+
 from typing import Union
 
 from entities import User
-
-register_adapter(Decimal, lambda d: str(d))
-register_converter("decimal", lambda s: Decimal(s))
+from psycopg2 import IntegrityError
 
 
 class MoneyAmountError(RuntimeError):
     pass
 
 
-def create_db(connection: Connection):
-    connection.execute("""
+def create_db(connection):
+    cursor = connection.cursor()
+    cursor.execute("""
+        CREATE SEQUENCE public.your_sequence
+        INCREMENT 1
+        START 1
+        MINVALUE 1
+    """)
+    cursor.execute("""
         CREATE TABLE USERS(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY DEFAULT nextval('your_sequence'::regclass),
             name VARCHAR NOT NULL UNIQUE,
             max DECIMAL(10,2) NOT NULL,
             min  DECIMAL(10,2) NOT NULL,
             current DECIMAL(10,2) CHECK(current >= min AND current <= max)
         );
     """)
-
-
-def drop_db(connection: Connection):
-    connection.execute("DROP TABLE USERS")
-
-
-def insert(connection: Connection, user: User):
-    cursor = connection.cursor()
-    cursor.execute(
-        "INSERT INTO USERS (name, min, max, current) VALUES (?, ?, ?, ?)",
-        [user.name, user.min_, user.max_, user.current]
-    )
-    user.id_ = cursor.lastrowid
     cursor.close()
 
 
-def get(connection: Connection, name: str):
+def drop_db(connection):
+    cursor = connection.cursor()
+    cursor.execute("DROP TABLE IF EXISTS USERS")
+    cursor.execute("DROP SEQUENCE IF EXISTS public.your_sequence")
+    cursor.close()
+
+
+def insert(connection, user: User):
     cursor = connection.cursor()
     cursor.execute(
-        "SELECT id, name, min, max, current FROM USERS WHERE name = ?",
+        "INSERT INTO USERS (name, min, max, current) VALUES (%s, %s, %s, %s) RETURNING id",
+        [user.name, user.min_, user.max_, user.current]
+    )
+    user.id_ = cursor.fetchone()[0]
+    cursor.close()
+
+
+def get(connection, name: str):
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT id, name, min, max, current FROM USERS WHERE name = %s",
         [name]
     )
     row = cursor.fetchone()
@@ -52,17 +61,23 @@ def get(connection: Connection, name: str):
     return user
 
 
-def delete(connection: Connection, id_: int):
-    connection.execute("DELETE FROM USERS WHERE id=?", [id_])
+def delete(connection, id_: int):
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM USERS WHERE id=%s", [id_])
+    cursor.close()
 
 
-def delete_by_name(connection: Connection, name: str):
-    connection.execute("DELETE FROM USERS WHERE name=?", [name])
+def delete_by_name(connection, name: str):
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM USERS WHERE name=%s", [name])
+    cursor.close()
 
 
-def transfer_by_name(connection: Connection, from_name: str, to_name: str, amount: Union[Decimal, int]):
+def transfer_by_name(connection, from_name: str, to_name: str, amount: Union[Decimal, int]):
+    cursor = connection.cursor()
     try:
-        connection.execute("UPDATE USERS SET current=current-? WHERE name=?", [amount, from_name])
-        connection.execute("UPDATE USERS SET current=current+? WHERE name=?", [amount, to_name])
+        cursor.execute("UPDATE USERS SET current=current-%s WHERE name=%s", [amount, from_name])
+        cursor.execute("UPDATE USERS SET current=current+%s WHERE name=%s", [amount, to_name])
     except IntegrityError as e:
         raise MoneyAmountError()
+    cursor.close()
